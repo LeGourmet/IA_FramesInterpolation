@@ -31,7 +31,6 @@ class DataManager:
             for j in range(3):
                 data[j].append(imgs[i*3 + j])
         self.X = np.array(data)
-        print(self.X.shape)
 
     def get_batch(self, batch_size, index=0):
         start = index * batch_size
@@ -44,3 +43,15 @@ class DataManager:
         self.X[0] = self.X[0][indices]
         self.X[1] = self.X[1][indices]
         self.X[2] = self.X[2][indices]
+
+
+if __name__ == '__main__':
+    dm = DataManager("Projet_WebGL_2019.mp4")
+    print("size =", dm.size)
+    print("data shape =", dm.X.shape)
+    X1, Y, X2 = dm.get_batch(32)
+    print("X1 shape =", X1.shape)
+    print("Y shape =", Y.shape)
+    print("X2 shape =", X2.shape)
+    dm.shuffle()
+    print("data shape =", dm.X.shape)

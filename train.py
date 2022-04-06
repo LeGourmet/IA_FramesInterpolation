@@ -13,6 +13,7 @@ from absl import app
 from absl import flags
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import numpy as np
 from data_manager import DataManager
 from model import buildModel, myLossFnct
 from sample import sample
@@ -39,9 +40,10 @@ def train(model):
 
             for x in range(manager.width):
                 for y in range(manager.height):
-                    R = subImage(X1,79,x,y)+subImage(X2,79,x,y)
-                    P = subImage(X1,41,x,y)+subImage(X2,41,x,y)
-                    loss = model.train_on_batch(R, (P, subImage(Y,1,x,y)))
+                    R = np.concatenate((subImage(X1,79,x,y),subImage(X2,79,x,y)), axis=3)     # shape = (None,79,79,6)
+                    P = np.concatenate((subImage(X1,41,x,y),subImage(X2,41,x,y)), axis=2)     # shape = (None,41,82,3)
+                    pix = Y[0][x][y]                                                          # shape = [R, G, B]
+                    loss = model.train_on_batch(R, (P, pix))
 
         lossTab.append(loss)
         print("Epoch {} - loss: {}".format(epoch, loss))
@@ -59,10 +61,17 @@ def train(model):
 
 def subImage(batch, size, x, y):
     sX = x-(size//2)
+    maxX = len(batch[0])
     sY = y-(size//2)
-    a = batch[sX:(sX+size), sY:(sY+size)]
-    print(a.shape)
-    return a
+    maxY = len(batch[0][0])
+    res = []
+    for i in range(batch.shape[0]):
+        res.append([])
+        for j in range(sX,sX+size):
+            res[-1].append([])
+            for k in range(sY,sY+size):
+                res[-1][-1].append([0,0,0] if (j<0) | (j>=maxX) | (k<0) | (k>=maxY) else batch[i][j][k])
+    return np.array(res)
 
 
 def main(argv):
