@@ -40,10 +40,11 @@ def train(model):
 
             for x in range(manager.width):
                 for y in range(manager.height):
-                    R = np.concatenate((subImage(X1,79,x,y),subImage(X2,79,x,y)), axis=3)     # shape = (None,79,79,6)
-                    P = np.concatenate((subImage(X1,41,x,y),subImage(X2,41,x,y)), axis=2)     # shape = (None,41,82,3)
-                    pix = Y[0][x][y]                                                          # shape = [R, G, B]
-                    loss = model.train_on_batch(R, (P, pix))
+                    R = np.concatenate((subImage(X1,79,x,y),subImage(X2,79,x,y)), axis=3)  # shape = (None,79,79,6)
+                    P = np.concatenate((subImage(X1,41,x,y),subImage(X2,41,x,y)), axis=2)  # shape = (None,41,82,3)
+                    pix = subImage(Y,1,x,y)                                                # shape = (None,1,1,3)
+
+                    loss = model.train_on_batch(R, P, pix)
 
         lossTab.append(loss)
         print("Epoch {} - loss: {}".format(epoch, loss))
@@ -83,7 +84,7 @@ def main(argv):
     else:
         print("model.h5 not found")
 
-    model.compile(loss=myLossFnct, optimizer=Adam(FLAGS.learning_rate))
+    model.compile(loss=myLossFnct(), optimizer=Adam(FLAGS.learning_rate))
     model.summary()
 
     train(model)

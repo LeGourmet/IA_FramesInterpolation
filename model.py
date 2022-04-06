@@ -1,3 +1,5 @@
+import tensorflow as tf
+import numpy as np
 from tensorflow.keras import Input, Sequential
 from tensorflow.keras.layers import Conv2D, Reshape, BatchNormalization
 
@@ -31,6 +33,8 @@ def buildModel():
     return model
 
 
-def myLossFnct(Y_true, Y_pred):
-    print(len(Y_true), len(Y_pred))
-    return 1
+def myLossFnct(pixel= np.array([1,2,3])):
+    def loss(kernel, patchs):
+        print(kernel.shape, patchs.shape, pixel.shape)
+        return tf.constant(1.)
+    return loss

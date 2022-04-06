@@ -17,14 +17,13 @@ class DataManager:
 
         video = cv2.VideoCapture("./video/"+name)
         length = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
-        print("Nombre frame =", length)
-        bar = tqdm(total=100)
+        bar = tqdm(total=length)
         while video.isOpened():
             ret, frame = video.read()
             if not ret:
                 break
             imgs.append(cv2.resize(cv2.cvtColor(frame, cv2.IMREAD_COLOR), (self.width, self.height)))
-            bar.update(100/length)
+            bar.update(1)
 
         self.size = len(imgs)//3
         for i in range(self.size):
