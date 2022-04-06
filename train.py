@@ -25,7 +25,7 @@ FLAGS = flags.FLAGS
 
 
 def train(model):
-    manager = DataManager("BlacKkKlansman.mkv")
+    manager = DataManager("Projet_WebGL_2019.mp4")
     nbBatches = manager.size // FLAGS.batch_size
     lossTab = []
     loss = 0
@@ -60,7 +60,7 @@ def train(model):
 def subImage(batch, size, x, y):
     sX = x-(size//2)
     sY = y-(size//2)
-    a = batch[sX:(sX+size),sY:(sY+size)]
+    a = batch[sX:(sX+size), sY:(sY+size)]
     print(a.shape)
     return a
 
