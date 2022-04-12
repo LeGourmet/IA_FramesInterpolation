@@ -1,14 +1,12 @@
-import tensorflow as tf
-import numpy as np
 from tensorflow.keras import Input, Sequential
-from tensorflow.keras.layers import Conv2D, Reshape, BatchNormalization
+from tensorflow.keras.layers import Conv2D, Reshape
 
 
 def Conv(n_filters, filter_width, strides, activation="relu"):
     return Conv2D(n_filters, filter_width, strides=strides, use_bias=False, padding="valid", activation=activation)
 
 
-def buildModel():
+def AutoEncoder():
     model = Sequential()
     model.add(Input(shape=(79, 79, 6), name="Input"))
 
@@ -32,9 +30,3 @@ def buildModel():
     model.add(Reshape((41, 82), name="Output"))
     return model
 
-
-def myLossFnct(pixel= np.array([1,2,3])):
-    def loss(kernel, patchs):
-        print(kernel.shape, patchs.shape, pixel.shape)
-        return tf.constant(1.)
-    return loss

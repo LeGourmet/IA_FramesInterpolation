@@ -9,15 +9,19 @@ physical_devices = tf.config.list_physical_devices('GPU')
 if len(physical_devices) > 0:
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
-from absl import app
-from absl import flags
-from tqdm import tqdm
-import matplotlib.pyplot as plt
 import numpy as np
-from data_manager import DataManager
-from model import buildModel, myLossFnct
-from sample import sample
+from absl import app
+from tqdm import tqdm
+from absl import flags
+import matplotlib.pyplot as plt
+
+from src.predict import predict
+from src.model import AutoEncoder
+from src.data_manager import DataManager
+
+
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import MSE
 
 flags.DEFINE_integer("epochs", 100, "number of epochs")
 flags.DEFINE_integer("batch_size", 32, "batch size")
@@ -26,7 +30,7 @@ FLAGS = flags.FLAGS
 
 
 def train(model):
-    manager = DataManager("Projet_WebGL_2019.mp4")
+    manager = DataManager()
     nbBatches = manager.size // FLAGS.batch_size
     lossTab = []
     loss = 0
@@ -52,7 +56,7 @@ def train(model):
     print("Finished training.")
 
     # model.save("./trained_model/model.h5")
-    sample(model)
+    predict(model)
 
     plt.plot(lossTab)
     plt.xlabel('Epoch')
@@ -75,8 +79,9 @@ def subImage(batch, size, x, y):
     return np.array(res)
 
 
-def main(argv):
-    model = buildModel()
+def load_model(model):
+    optimizer = Adam(FLAGS.learning_rate)
+    loss = MSE
 
     if os.path.isfile("./trained_model/model.h5"):
         print("Loading model from model.h5")
@@ -84,9 +89,13 @@ def main(argv):
     else:
         print("model.h5 not found")
 
-    model.compile(loss=myLossFnct(), optimizer=Adam(FLAGS.learning_rate))
+    model.compile(optimizer, loss)
     model.summary()
 
+
+def main(argv):
+    model = AutoEncoder()
+    load_model(model)
     train(model)
 
 
