@@ -1,36 +1,31 @@
+from utils import setup_cuda_device
+setup_cuda_device()
+
 import os
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
-
-import tensorflow as tf
-
-physical_devices = tf.config.list_physical_devices('GPU')
-if len(physical_devices) > 0:
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
-
 import numpy as np
 from absl import app
 from tqdm import tqdm
 from absl import flags
+import tensorflow as tf
 import matplotlib.pyplot as plt
 #from predict import predict
 from model import AutoEncoder
 from data_manager import DataManager
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import MSE
 
-flags.DEFINE_integer("epochs", 100, "number of epochs")
-flags.DEFINE_integer("batch_size", 32, "batch size")
+flags.DEFINE_integer("epochs", 1, "number of epochs")
+flags.DEFINE_integer("batch_size", 2, "batch size")
 flags.DEFINE_float("learning_rate", 0.005, "learning rate")
 FLAGS = flags.FLAGS
 
 
-def train(model, optimizer):
+def train(model):
     manager = DataManager()
-    mse = tf.keras.losses.MeanSquaredError()
     nbBatches = manager.size // FLAGS.batch_size
     lossTab = []
     loss = 0
+    test = np.zeros((2, 41, 82, 1))
 
     for epoch in range(1,FLAGS.epochs+1):
         print('Epoch', epoch, '/', FLAGS.epochs)
@@ -42,17 +37,9 @@ def train(model, optimizer):
             for x in range(manager.width):
                 for y in range(manager.height):
                     R = np.concatenate((subImage(X1,79,x,y),subImage(X2,79,x,y)), axis=3)  # shape = (None,79,79,6)
-                    P = np.concatenate((subImage(X1,41,x,y),subImage(X2,41,x,y)), axis=2)  # shape = (None,41,82,3)
-                    pix = subImage(Y,1,x,y)                                                # shape = (None,1,1,3)
-
-                    with tf.GradientTape() as g:
-                        #pix_pred = applyKernel(model(R), P)
-                        kernel = model(R)
-                        kernel = np.reshape(kernel,(kernel.shape[0],kernel.shape[1],kernel.shape[2],1))
-                        kernel = np.repeat(kernel, 3, axis=3)
-                        loss = mse(kernel,P)
-                    grad = g.gradient(loss, model.trainable_variables)
-                    optimizer.apply_gradients(zip(grad, model.trainable_variables))
+                    #P = np.concatenate((subImage(X1,41,x,y),subImage(X2,41,x,y)), axis=2)  # shape = (None,41,82,3)
+                    #pix = subImage(Y,1,x,y)                                                # shape = (None,1,1,3)
+                    model.train_on_batch(R,test)
 
         lossTab.append(loss)
         print("Epoch {} - loss: {}".format(epoch, loss))
@@ -102,8 +89,9 @@ def load_model(model):
 def main(argv):
     model = AutoEncoder()
     load_model(model)
+    model.compile(loss=MSE, optimizer=Adam(FLAGS.learning_rate))
     model.summary()
-    train(model, Adam(FLAGS.learning_rate))
+    train(model)
 
 
 if __name__ == '__main__':
