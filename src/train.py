@@ -14,14 +14,10 @@ from absl import app
 from tqdm import tqdm
 from absl import flags
 import matplotlib.pyplot as plt
-
-from src.predict import predict
+#from src.predict import predict
 from src.model import AutoEncoder
 from src.data_manager import DataManager
-
-
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import MSE
 
 flags.DEFINE_integer("epochs", 100, "number of epochs")
 flags.DEFINE_integer("batch_size", 32, "batch size")
@@ -29,8 +25,9 @@ flags.DEFINE_float("learning_rate", 0.005, "learning rate")
 FLAGS = flags.FLAGS
 
 
-def train(model):
+def train(model, optimizer):
     manager = DataManager()
+    mse = tf.keras.losses.MeanSquaredError()
     nbBatches = manager.size // FLAGS.batch_size
     lossTab = []
     loss = 0
@@ -40,7 +37,7 @@ def train(model):
         manager.shuffle()
 
         for i in tqdm(range(nbBatches)):
-            X1, Y, X2 = manager.get_batch(FLAGS.batch_size, i)
+            (X1, X2), Y = manager.get_batch(FLAGS.batch_size, i)
 
             for x in range(manager.width):
                 for y in range(manager.height):
@@ -48,7 +45,11 @@ def train(model):
                     P = np.concatenate((subImage(X1,41,x,y),subImage(X2,41,x,y)), axis=2)  # shape = (None,41,82,3)
                     pix = subImage(Y,1,x,y)                                                # shape = (None,1,1,3)
 
-                    loss = model.train_on_batch(R, P, pix)
+                    with tf.GradientTape() as g:
+                        pix_pred = applyKernel(model(R), P)
+                        loss = mse(pix,pix_pred)
+                    grad = g.gradient(loss, model.trainable_variables)
+                    optimizer.apply_gradients(zip(grad, model.trainable_variables))
 
         lossTab.append(loss)
         print("Epoch {} - loss: {}".format(epoch, loss))
@@ -56,12 +57,20 @@ def train(model):
     print("Finished training.")
 
     # model.save("./trained_model/model.h5")
-    predict(model)
+    # predict(model)
 
     plt.plot(lossTab)
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.show()
+
+
+def applyKernel(kernel, img):
+    res = []
+    for i in range(len(img)):
+        res.append([[[0,0,0]]])
+
+    return np.array(res)
 
 
 def subImage(batch, size, x, y):
@@ -80,23 +89,18 @@ def subImage(batch, size, x, y):
 
 
 def load_model(model):
-    optimizer = Adam(FLAGS.learning_rate)
-    loss = MSE
-
     if os.path.isfile("./trained_model/model.h5"):
         print("Loading model from model.h5")
         model.load_weights("./trained_model/model.h5")
     else:
         print("model.h5 not found")
 
-    model.compile(optimizer, loss)
-    model.summary()
-
 
 def main(argv):
     model = AutoEncoder()
     load_model(model)
-    train(model)
+    model.summary()
+    train(model, Adam(FLAGS.learning_rate))
 
 
 if __name__ == '__main__':
