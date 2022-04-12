@@ -14,9 +14,9 @@ from absl import app
 from tqdm import tqdm
 from absl import flags
 import matplotlib.pyplot as plt
-#from src.predict import predict
-from src.model import AutoEncoder
-from src.data_manager import DataManager
+#from predict import predict
+from model import AutoEncoder
+from data_manager import DataManager
 from tensorflow.keras.optimizers import Adam
 
 flags.DEFINE_integer("epochs", 100, "number of epochs")
@@ -46,8 +46,11 @@ def train(model, optimizer):
                     pix = subImage(Y,1,x,y)                                                # shape = (None,1,1,3)
 
                     with tf.GradientTape() as g:
-                        pix_pred = applyKernel(model(R), P)
-                        loss = mse(pix,pix_pred)
+                        #pix_pred = applyKernel(model(R), P)
+                        kernel = model(R)
+                        kernel = np.reshape(kernel,(kernel.shape[0],kernel.shape[1],kernel.shape[2],1))
+                        kernel = np.repeat(kernel, 3, axis=3)
+                        loss = mse(kernel,P)
                     grad = g.gradient(loss, model.trainable_variables)
                     optimizer.apply_gradients(zip(grad, model.trainable_variables))
 
