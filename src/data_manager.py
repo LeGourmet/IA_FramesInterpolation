@@ -18,7 +18,7 @@ class DataManager:
         imgs = []
         data = [[], [], []]
 
-        video = cv2.VideoCapture("./src/video/video.mkv")
+        video = cv2.VideoCapture("./video/video.mkv")
         length = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
         bar = tqdm(total=length)
         while video.isOpened():

@@ -1,4 +1,4 @@
-from utils import setup_cuda_device
+from utils import setup_cuda_device, subImage
 setup_cuda_device()
 
 import os
@@ -15,7 +15,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import MSE
 
 flags.DEFINE_integer("epochs", 1, "number of epochs")
-flags.DEFINE_integer("batch_size", 2, "batch size")
+flags.DEFINE_integer("batch_size", 32, "batch size")
 flags.DEFINE_float("learning_rate", 0.005, "learning rate")
 FLAGS = flags.FLAGS
 
@@ -36,9 +36,7 @@ def train(model):
             for x in range(manager.width):
                 for y in range(manager.height):
                     R = np.concatenate((subImage(X1,79,x,y),subImage(X2,79,x,y)), axis=3)  # shape = (None,79,79,6)
-                    #P = np.concatenate((subImage(X1,41,x,y),subImage(X2,41,x,y)), axis=2)  # shape = (None,41,82,3)
-                    pix = subImage(Y,1,x,y)                                                # shape = (None,1,1,3)
-                    model.train_on_batch(R, pix)
+                    model.train_on_batch(R, Y[:,x:x+1,y:y+1,:]) # pre calcul pix ? => #shape none,1,1,3 to none,3
 
         lossTab.append(loss)
         print("Epoch {} - loss: {}".format(epoch, loss))
@@ -58,29 +56,6 @@ def custom_loss(y_true,y_pred):
     return tf.reduce_mean(tf.square(y_true - y_pred), axis=-1)
 
 
-def applyKernel(kernel, img):
-    res = []
-    for i in range(len(img)):
-        res.append([[[0,0,0]]])
-
-    return np.array(res)
-
-
-def subImage(batch, size, x, y):
-    sX = x-(size//2)
-    maxX = len(batch[0])
-    sY = y-(size//2)
-    maxY = len(batch[0][0])
-    res = []
-    for i in range(batch.shape[0]):
-        res.append([])
-        for j in range(sX,sX+size):
-            res[-1].append([])
-            for k in range(sY,sY+size):
-                res[-1][-1].append([0,0,0] if (j<0) | (j>=maxX) | (k<0) | (k>=maxY) else batch[i][j][k])
-    return np.array(res)
-
-
 def load_model(model):
     if os.path.isfile("./trained_model/model.h5"):
         print("Loading model from model.h5")
@@ -93,7 +68,7 @@ def main(argv):
     model = AutoEncoder()
     load_model(model)
     model.summary()
-    model.compile(loss=custom_loss, optimizer=Adam(FLAGS.learning_rate))
+    model.compile(loss=MSE, optimizer=Adam(FLAGS.learning_rate))
     train(model)
 
 
