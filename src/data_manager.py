@@ -6,9 +6,9 @@ import cv2
 class DataManager:
     def __init__(self, flag=False):
         # todo un apprentissage judicieux (evoque en session) vous permettra potentiellement de mieux rentabiliser l'apprentissage.
-        self.X = None  # (3 frames, 484 batches, height, width, color)
-        self.width = 10
-        self.height = 8
+        self.X = None  # (3 frames, batches, height, width, color)
+        self.width = 1280
+        self.height = 720
         self.size = None
 
         # todo Si ce drapeau est defini, votre code ne devra prendre en compte que les 10 premieres images de la video

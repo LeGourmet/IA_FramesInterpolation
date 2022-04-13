@@ -25,7 +25,6 @@ def train(model):
     nbBatches = manager.size // FLAGS.batch_size
     lossTab = []
     loss = 0
-    test = np.zeros((2, 41, 82, 1))
 
     for epoch in range(1,FLAGS.epochs+1):
         print('Epoch', epoch, '/', FLAGS.epochs)
@@ -38,8 +37,8 @@ def train(model):
                 for y in range(manager.height):
                     R = np.concatenate((subImage(X1,79,x,y),subImage(X2,79,x,y)), axis=3)  # shape = (None,79,79,6)
                     #P = np.concatenate((subImage(X1,41,x,y),subImage(X2,41,x,y)), axis=2)  # shape = (None,41,82,3)
-                    #pix = subImage(Y,1,x,y)                                                # shape = (None,1,1,3)
-                    model.train_on_batch(R,test)
+                    pix = subImage(Y,1,x,y)                                                # shape = (None,1,1,3)
+                    model.train_on_batch(R, pix)
 
         lossTab.append(loss)
         print("Epoch {} - loss: {}".format(epoch, loss))
@@ -53,6 +52,10 @@ def train(model):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.show()
+
+
+def custom_loss(y_true,y_pred):
+    return tf.reduce_mean(tf.square(y_true - y_pred), axis=-1)
 
 
 def applyKernel(kernel, img):
@@ -89,8 +92,8 @@ def load_model(model):
 def main(argv):
     model = AutoEncoder()
     load_model(model)
-    model.compile(loss=MSE, optimizer=Adam(FLAGS.learning_rate))
     model.summary()
+    model.compile(loss=custom_loss, optimizer=Adam(FLAGS.learning_rate))
     train(model)
 
 
