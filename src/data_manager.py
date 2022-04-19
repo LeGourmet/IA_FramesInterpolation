@@ -9,8 +9,8 @@ class DataManager:
         self.images = None     # save all the images of a video
         self.batches = None    # indices of images X1, Y, X2 for each batches
         self.nbBatches = 0
-        self.width = 1280
-        self.height = 720
+        self.width = 256   # 1280
+        self.height = 144  # 720
         self.dixImages = flag  # flags true = 8 batches
 
         imgs = []
@@ -24,7 +24,7 @@ class DataManager:
         for _ in tqdm(range(size)):
             _, frame = video.read()
             imgs.append(cv2.resize(cv2.cvtColor(frame, cv2.IMREAD_COLOR), (self.width, self.height)))
-        self.images = np.array(imgs)
+        self.images = np.pad(imgs,((0,0),(39,39),(39,39),(0,0)),'constant', constant_values=0)
 
         self.nbBatches = size-2
         for i in range(self.nbBatches):

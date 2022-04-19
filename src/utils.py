@@ -75,18 +75,3 @@ def get_fake_data(model, size, z=None):
     if z is None:
         z = get_Z_uniform(size, model.latent_dim)
     return model.generator(z)
-
-
-def subImage(batch, size, x, y):
-    sX = x-(size//2)
-    maxX = len(batch[0])
-    sY = y-(size//2)
-    maxY = len(batch[0][0])
-    res = []
-    for i in range(batch.shape[0]):
-        res.append([])
-        for j in range(sX,sX+size):
-            res[-1].append([])
-            for k in range(sY,sY+size):
-                res[-1][-1].append([0,0,0] if (j<0) | (j>=maxX) | (k<0) | (k>=maxY) else batch[i][j][k])
-    return np.array(res)
