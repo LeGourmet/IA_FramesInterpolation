@@ -14,15 +14,15 @@ from data_manager import DataManager
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import MSE
 
-flags.DEFINE_integer("epochs", 1, "number of epochs")
-flags.DEFINE_integer("batch_size", 32, "batch size")
+flags.DEFINE_integer("epochs", 15, "number of epochs")
+flags.DEFINE_integer("batch_size", 2, "batch size")
 flags.DEFINE_float("learning_rate", 0.005, "learning rate")
 FLAGS = flags.FLAGS
 
 
 def train(model):
-    manager = DataManager()
-    nbBatches = manager.size // FLAGS.batch_size
+    manager = DataManager(flag=True)
+    nbBatches = manager.nbBatches // FLAGS.batch_size
     lossTab = []
     loss = 0
 
@@ -30,13 +30,16 @@ def train(model):
         print('Epoch', epoch, '/', FLAGS.epochs)
         manager.shuffle()
 
-        for i in tqdm(range(nbBatches)):
+        for i in range(nbBatches):
+            print('batch', i+1, '/', nbBatches)
             (X1, X2), Y = manager.get_batch(FLAGS.batch_size, i)
 
+            bar = tqdm(total=manager.width*manager.height)
             for x in range(manager.width):
                 for y in range(manager.height):
                     R = np.concatenate((subImage(X1,79,x,y),subImage(X2,79,x,y)), axis=3)  # shape = (None,79,79,6)
                     model.train_on_batch(R, Y[:,x:x+1,y:y+1,:]) # pre calcul pix ? => #shape none,1,1,3 to none,3
+                    bar.update()
 
         lossTab.append(loss)
         print("Epoch {} - loss: {}".format(epoch, loss))

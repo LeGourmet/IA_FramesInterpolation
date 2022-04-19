@@ -6,42 +6,40 @@ import cv2
 class DataManager:
     def __init__(self, flag=False):
         # todo un apprentissage judicieux (evoque en session) vous permettra potentiellement de mieux rentabiliser l'apprentissage.
-        self.X = None  # (3 frames, batches, height, width, color)
+        self.images = None     # save all the images of a video
+        self.batches = None    # indices of images X1, Y, X2 for each batches
+        self.nbBatches = 0
         self.width = 1280
         self.height = 720
-        self.size = None
-
-        # todo Si ce drapeau est defini, votre code ne devra prendre en compte que les 10 premieres images de la video
-        # pour l'apprentissage. Cette fonctionnalite est obligatoire (voir sujet du projet).
-        self.dixImages = flag
+        self.dixImages = flag  # flags true = 8 batches
 
         imgs = []
-        data = [[], [], []]
+        batches = [[], [], []]
 
-        video = cv2.VideoCapture("./video/video.mkv")
-        length = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
-        bar = tqdm(total=length)
-        while video.isOpened():
-            ret, frame = video.read()
-            if not ret:
-                break
+        video = cv2.VideoCapture("../video/video.mkv")
+        size = int(video.get(cv2.CAP_PROP_FRAME_COUNT)-1)
+        if flag:
+            size = min(size, 10)
+
+        for _ in tqdm(range(size)):
+            _, frame = video.read()
             imgs.append(cv2.resize(cv2.cvtColor(frame, cv2.IMREAD_COLOR), (self.width, self.height)))
-            bar.update(1)
+        self.images = np.array(imgs)
 
-        self.size = len(imgs) // 3
-        for i in range(self.size):
+        self.nbBatches = size-2
+        for i in range(self.nbBatches):
             for j in range(3):
-                data[j].append(imgs[i * 3 + j])
-        self.X = np.array(data)
+                batches[j].append(i+j)
+        self.batches = np.array(batches)
 
     def get_batch(self, batch_size, index=0):
         start = index * batch_size
         end = start + batch_size
-        return (self.X[0][start:end], self.X[2][start:end]), self.X[1][start:end]
+        return (self.images[self.batches[0][start:end]], self.images[self.batches[2][start:end]]), self.images[self.batches[1][start:end]]
 
     def shuffle(self):
-        indices = np.arange(self.size)
+        indices = np.arange(self.nbBatches)
         np.random.shuffle(indices)
-        self.X[0] = self.X[0][indices]
-        self.X[1] = self.X[1][indices]
-        self.X[2] = self.X[2][indices]
+        self.batches[0] = self.batches[0][indices]
+        self.batches[1] = self.batches[1][indices]
+        self.batches[2] = self.batches[2][indices]
