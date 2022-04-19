@@ -8,17 +8,17 @@ from tqdm import tqdm
 from absl import flags
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from predict import predict
+from predict import predictImage
 from random import randint
 from model import AutoEncoder
 from data_manager import DataManager
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adamax
 from tensorflow.keras.losses import MSE
 
-flags.DEFINE_integer("epochs", 1, "number of epochs")
+flags.DEFINE_integer("epochs", 2, "number of epochs")
 flags.DEFINE_integer("batch_size", 2, "batch size")
-flags.DEFINE_integer("nbPixelsPick", 10, "number of pixel pick by batch")
-flags.DEFINE_float("learning_rate", 0.005, "learning rate")
+flags.DEFINE_integer("nbPixelsPick", 2, "number of pixel pick by batch") # use 128 in paper
+flags.DEFINE_float("learning_rate", 0.001, "learning rate")
 FLAGS = flags.FLAGS
 
 
@@ -32,12 +32,11 @@ def train(model):
         print('Epoch', epoch, '/', FLAGS.epochs)
         manager.shuffle()
 
-        for i in range(nbBatches):
-            print('batch', i+1, '/', nbBatches)
+        for i in tqdm(range(nbBatches)):
             (X1, X2), Y = manager.get_batch(FLAGS.batch_size, i)
             X1X2 = np.concatenate((X1,X2), axis=3)
 
-            for _ in tqdm(range(FLAGS.nbPixelsPick)):
+            for _ in range(FLAGS.nbPixelsPick):
                 # x and y are invert in datamanager
                 x = randint(39, manager.height+38)
                 y = randint(39, manager.width+38)
@@ -49,7 +48,7 @@ def train(model):
     print("Finished training.")
 
     # model.save("./trained_model/model.h5")
-    predict(model)
+    predictImage(model)
 
     plt.plot(lossTab)
     plt.xlabel('Epoch')
@@ -73,7 +72,7 @@ def main(argv):
     model = AutoEncoder()
     load_model(model)
     model.summary()
-    model.compile(loss=MSE, optimizer=Adam(FLAGS.learning_rate))
+    model.compile(loss=MSE, optimizer=Adamax(FLAGS.learning_rate))
     train(model)
 
 
