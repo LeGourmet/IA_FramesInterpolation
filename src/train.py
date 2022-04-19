@@ -8,14 +8,16 @@ from tqdm import tqdm
 from absl import flags
 import tensorflow as tf
 import matplotlib.pyplot as plt
-#from predict import predict
+from predict import predict
+from random import randint
 from model import AutoEncoder
 from data_manager import DataManager
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import MSE
 
-flags.DEFINE_integer("epochs", 3, "number of epochs")
+flags.DEFINE_integer("epochs", 1, "number of epochs")
 flags.DEFINE_integer("batch_size", 2, "batch size")
+flags.DEFINE_integer("nbPixelsPick", 10, "number of pixel pick by batch")
 flags.DEFINE_float("learning_rate", 0.005, "learning rate")
 FLAGS = flags.FLAGS
 
@@ -33,14 +35,13 @@ def train(model):
         for i in range(nbBatches):
             print('batch', i+1, '/', nbBatches)
             (X1, X2), Y = manager.get_batch(FLAGS.batch_size, i)
+            X1X2 = np.concatenate((X1,X2), axis=3)
 
-            bar = tqdm(total=manager.width*manager.height)
-            for x in range(39,manager.width+39):
-                for y in range(39,manager.height+39):
-                    R = np.concatenate((X1[:,x-39:x+40,y-39:y+40,:],X2[:,x-39:x+40,y-39:y+40,:]), axis=3)
-                    pix = np.squeeze(Y[:,x:x+1,y:y+1,:])
-                    loss = model.train_on_batch(R, pix)
-                    bar.update()
+            for _ in tqdm(range(FLAGS.nbPixelsPick)):
+                # x and y are invert in datamanager
+                x = randint(39, manager.height+38)
+                y = randint(39, manager.width+38)
+                loss = model.train_on_batch(X1X2[:, x-39:x+40, y-39:y+40, :], np.squeeze(Y[:, x:x+1, y:y+1, :]))
 
         lossTab.append(loss)
         print("Epoch {} - loss: {}".format(epoch, loss))
@@ -48,7 +49,7 @@ def train(model):
     print("Finished training.")
 
     # model.save("./trained_model/model.h5")
-    # predict(model)
+    predict(model)
 
     plt.plot(lossTab)
     plt.xlabel('Epoch')
