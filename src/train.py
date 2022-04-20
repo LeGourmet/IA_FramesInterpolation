@@ -15,7 +15,7 @@ from data_manager import DataManager
 from tensorflow.keras.optimizers import Adamax
 from tensorflow.keras.losses import MSE
 
-flags.DEFINE_integer("epochs", 10, "number of epochs")
+flags.DEFINE_integer("epochs", 1, "number of epochs")
 flags.DEFINE_integer("batch_size", 32, "batch size")
 flags.DEFINE_integer("nbPixelsPick", 128, "number of pixel pick by batch")  # use 128 in paper
 flags.DEFINE_float("learning_rate", 0.001, "learning rate")                 # use 0.001 in paper
@@ -29,16 +29,15 @@ def train(model):
     loss = 0
 
     for epoch in range(1,FLAGS.epochs+1):
-        print('Epoch', epoch, '/', FLAGS.epochs)
         manager.shuffle()
 
-        for i in tqdm(range(nbBatches)):
+        for i in tqdm(range(nbBatches),desc="Epoch "+str(epoch)+"/"+str(FLAGS.epochs)):
             (X1, X2), Y = manager.get_batch(FLAGS.batch_size, i)
             X1X2 = np.concatenate((X1,X2), axis=3)
 
             for _ in range(FLAGS.nbPixelsPick):
-                x = randint(39, manager.height+38)  # why 38 investigate
-                y = randint(39, manager.width+38)   # why 38 investigate
+                x = randint(39, manager.height+38)  # todo why 38 investigate
+                y = randint(39, manager.width+38)   # todo why 38 investigate
                 loss = model.train_on_batch(X1X2[:, x-39:x+40, y-39:y+40, :], np.squeeze(Y[:, x:x+1, y:y+1, :]))
 
         lossTab.append(loss)
