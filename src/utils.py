@@ -2,6 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf
 
+# todo faire le trie
 
 def setup_cuda_device(gpus: str = "-1"):
     """ force enable or disable cuda devices"""

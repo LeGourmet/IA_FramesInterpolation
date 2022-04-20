@@ -24,7 +24,7 @@ class DataManager:
         for _ in tqdm(range(size)):
             _, frame = video.read()
             imgs.append(cv2.resize(cv2.cvtColor(frame, cv2.IMREAD_COLOR), (self.width, self.height)))
-        self.images = np.pad(imgs,((0,0),(39,39),(39,39),(0,0)),'constant', constant_values=0)
+        self.images = np.pad(imgs, ((0,0),(39,39),(39,39),(0,0)), 'constant', constant_values=0)
 
         self.nbBatches = size-2
         for i in range(self.nbBatches):

@@ -8,7 +8,7 @@ from tqdm import tqdm
 from absl import flags
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from predict import predictImage
+from predict import predict
 from random import randint
 from model import AutoEncoder
 from data_manager import DataManager
@@ -36,9 +36,10 @@ def train(model):
             X1X2 = np.concatenate((X1,X2), axis=3)
 
             for _ in range(FLAGS.nbPixelsPick):
-                x = randint(39, manager.height+38)  # todo why 38 investigate
-                y = randint(39, manager.width+38)   # todo why 38 investigate
-                loss = model.train_on_batch(X1X2[:, x-39:x+40, y-39:y+40, :], np.squeeze(Y[:, x:x+1, y:y+1, :]))
+                # random include nb before and after then need -1
+                x = randint(0,manager.height-1)
+                y = randint(0,manager.width-1)
+                loss = model.train_on_batch(X1X2[:, x:x+79, y:y+79, :], np.squeeze(Y[:, x+39:x+40, y+39:y+40, :]))
 
         lossTab.append(loss)
         print("Epoch {} - loss: {}".format(epoch, loss))
@@ -46,7 +47,7 @@ def train(model):
     print("Finished training.")
 
     model.save("../trained_model/model.h5")
-    predictImage(model)
+    predict(model, video=False)
 
     plt.plot(lossTab)
     plt.xlabel('Epoch')
@@ -55,7 +56,7 @@ def train(model):
 
 
 def custom_loss(y_true,y_pred):
-    return tf.reduce_mean(tf.square(y_true - y_pred), axis=-1)
+    return tf.reduce_mean(tf.abs(y_true - y_pred), axis=-1)
 
 
 def load_model(model):
