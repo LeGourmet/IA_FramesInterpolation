@@ -6,6 +6,17 @@ from tensorflow.keras.layers import Conv2D, Conv3D, Reshape, BatchNormalization
 def Conv(n_filters, filter_width, strides, activation="relu"):
     return Conv2D(n_filters, filter_width, strides=strides, use_bias=False, padding="valid", activation=activation)
 
+'''
+def AutoEncoder():
+    input = Input(shape=(79, 79, 6), name="Input")
+    X = Conv(64, 2, 2)(input)
+    X = Conv(32, 2, 2)(X)
+    X = Conv(16, 2, 2)(X)
+    X = Conv(8, 2, 2)(X)
+    X = Conv(4, 2, 2)(X)
+    output = Conv(3, 2, 2)(X)
+    return Model(inputs=input, outputs=output, name="model")
+'''
 
 def AutoEncoder():
     input = Input(shape=(79, 79, 6), name="Input")
@@ -29,7 +40,6 @@ def AutoEncoder():
 
     kernel = Reshape((41, 41, 1, 2))(X)
     P = Reshape((41, 41, 3, 2))(input[:, 19:60, 19:60, :])
-    # todo replace with conv2d
     output = tf.math.reduce_sum(tf.math.multiply(tf.repeat(kernel, repeats=3, axis=3), P), [1,2,4])
 
     return Model(inputs=input, outputs=output, name="model")

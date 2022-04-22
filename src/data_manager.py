@@ -38,8 +38,7 @@ class DataManager:
         return (self.images[self.batches[0][start:end]], self.images[self.batches[2][start:end]]), self.images[self.batches[1][start:end]]
 
     def shuffle(self):
-        indices = np.arange(self.nbBatches)
-        np.random.shuffle(indices)
+        indices = np.random.permutation(self.nbBatches)
         self.batches[0] = self.batches[0][indices]
         self.batches[1] = self.batches[1][indices]
         self.batches[2] = self.batches[2][indices]

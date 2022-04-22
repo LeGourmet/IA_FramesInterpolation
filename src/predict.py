@@ -12,18 +12,21 @@ from absl import app
 from tqdm import tqdm
 
 
-# optimize with begest size in gpu
 def predOneImage(model, width, height, iBefore, iAfter):
-    X1X2 = np.concatenate((iBefore, iAfter), axis=2)
-    X1X2 = np.pad(X1X2, ((39, 39), (39, 39), (0, 0)), "constant", constant_values=0)  # or pad before
-    imgPred = []
+    size = 600#1500
+    X1X2 = np.pad(np.concatenate((iBefore, iAfter), axis=2), ((39,39),(39,39),(0,0)), "constant", constant_values=0)
+    img = []
+    batch = []
 
+    end = (width-1)*(height-1)
     for x in range(height):
-        batch = []
         for y in range(width):
-            batch.append(X1X2[x:x + 79, y:y + 79, :])
-        imgPred.append(model.predict(np.array(batch)))
-    return np.array(imgPred)
+            batch.append(X1X2[x:x+79, y:y+79, :])
+            if ((x*width+y)%size == (size-1)) | ((x*y)==end):
+                img.extend(model(np.array(batch), training=False))
+                batch = []
+
+    return np.reshape(img, (height,width,3))
 
 
 # video = True => for predict a video ; False only one image
@@ -34,9 +37,9 @@ def predict(model, path="../video/video.mkv", video=True):
     nbFrame = int(video_in.get(cv2.CAP_PROP_FRAME_COUNT))-1
     width = int(video_in.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(video_in.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    nbFrame = 15
-    width = 160  # 400#800#1280
-    height = 90  # 225#450#720
+    nbFrame = 40
+    width = 160#400#800#1280
+    height = 90#225#450#720
 
     if video:
         fourcc = cv2.VideoWriter_fourcc(*'HFYU')  # ou *'HFYU' *'XVID' ,*MJPG, *MP4V, *'DIVX' cv2.CV_FOURCC_PROMPT
@@ -96,7 +99,7 @@ def load_model(model):
 def main(argv):
     model = AutoEncoder()
     load_model(model)
-    predict(model, video=False)
+    predict(model, video=True)
 
 
 if __name__ == '__main__':
