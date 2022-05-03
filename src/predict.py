@@ -38,8 +38,9 @@ def predict(model, path="../video/video.mkv", video=True):
     width = int(video_in.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(video_in.get(cv2.CAP_PROP_FRAME_HEIGHT))
     nbFrame = 40
-    width = 640 #60#400#800#1280
-    height = 360 #90#225#450#720
+    width = 640 #400#800#1280
+    height = 360 #225#450#720
+
 
     if video:
         fourcc = cv2.VideoWriter_fourcc(*'HFYU')  # ou *'HFYU' *'XVID' ,*MJPG, *MP4V, *'DIVX' cv2.CV_FOURCC_PROMPT
@@ -54,11 +55,11 @@ def predict(model, path="../video/video.mkv", video=True):
                 _, frame2 = video_in.read()
                 img2 = cv2.resize(cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB), (width, height))
 
-                video_out.write(img1)
+                video_out.write(cv2.cvtColor(img1,cv2.COLOR_RGB2BGR))
                 video_out.write(predOneImage(model, width, height, img1, img2).astype(np.uint8))
                 img1 = img2
 
-            video_out.write(img2, cv2.COLOR_RGB2BGR)
+            video_out.write(cv2.cvtColor(img2,cv2.COLOR_RGB2BGR))
         video_out.release()
         video_in.release()
 

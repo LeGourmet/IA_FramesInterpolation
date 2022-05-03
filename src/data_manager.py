@@ -16,7 +16,7 @@ class DataManager:
         imgs = []
         batches = [[], [], []]
 
-        video = cv2.VideoCapture("../video/file_example_MP4_1280_10MG.mp4")
+        video = cv2.VideoCapture("../video/video.mkv")
         size = int(video.get(cv2.CAP_PROP_FRAME_COUNT)-1)
         if flag:
             size = min(size, 10)
