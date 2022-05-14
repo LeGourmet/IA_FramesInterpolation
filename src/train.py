@@ -33,13 +33,14 @@ def train(model):
 
         for i in tqdm(range(nbBatches),desc="Epoch "+str(epoch)+"/"+str(FLAGS.epochs)):
             (X1, X2), Y = manager.get_batch(FLAGS.batch_size, i)
-            X1X2 = np.concatenate((X1,X2), axis=3)
+            X1 = np.reshape(X1,(X1.shape[0],X1.shape[1],X1.shape[2],X1.shape[3],1))
+            X2 = np.reshape(X2,(X2.shape[0],X2.shape[1],X2.shape[2],X2.shape[3],1))
+            X1X2 = np.concatenate((X1,X2), axis=4)
 
             for _ in range(FLAGS.nbPixelsPick):
-                # random include nb before and after then need -1
                 x = randint(0,manager.height-1)
                 y = randint(0,manager.width-1)
-                loss = model.train_on_batch(X1X2[:, x:x+79, y:y+79, :], np.squeeze(Y[:, x+39:x+40, y+39:y+40, :]))
+                loss = model.train_on_batch(X1X2[:, x:x+79, y:y+79, :, :], np.squeeze(Y[:, x+39:x+40, y+39:y+40, :]))
 
         lossTab.append(loss)
         print("Epoch {} - loss: {}".format(epoch, loss))
