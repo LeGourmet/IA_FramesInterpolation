@@ -16,7 +16,7 @@ class DataManager:
         imgs = []
         batches = [[], [], []]
 
-        video = cv2.VideoCapture("../video/file_example_MP4_1280_10MG.mp4")
+        video = cv2.VideoCapture("../video/file_example_MP4_480_1_5MG.mp4")
         size = int(video.get(cv2.CAP_PROP_FRAME_COUNT)-1)
         if flag:
             size = min(size, 10)
@@ -25,6 +25,7 @@ class DataManager:
             _, frame = video.read()
             imgs.append(cv2.resize(frame, (self.width, self.height)))
         self.images = np.pad(imgs, ((0,0),(39,39),(39,39),(0,0)), 'constant', constant_values=0)
+        self.images = np.reshape(self.images, (self.images.shape[0], self.images.shape[1], self.images.shape[2], self.images.shape[3], 1))
 
         self.nbBatches = size-2
         for i in range(self.nbBatches):

@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import Input, Model
-from tensorflow.keras.layers import Conv2D, Reshape, BatchNormalization, Activation
+from tensorflow.keras.layers import Conv2D, Reshape, BatchNormalization, Activation, Dense
 
 
 def Conv(n_filters, filter_width, strides, activation="relu"):
@@ -30,8 +30,7 @@ def AutoEncoder():
     X = Activation("softmax")(X)
 
     kernel = Reshape((41, 41, 1, 2))(X)
-    P = input[:, 19:60, 19:60, :, :]
-    output = tf.math.reduce_sum(tf.math.multiply(tf.repeat(kernel, repeats=3, axis=3), P), [1,2,4])
+    output = tf.math.reduce_sum(tf.math.multiply(tf.repeat(kernel, repeats=3, axis=3), input[:, 19:60, 19:60, :, :]), [1, 2, 4])
 
     return Model(inputs=input, outputs=output, name="model")
 
