@@ -33,19 +33,22 @@ def predOneImage(model, width, height, iBefore, iAfter):
 
 
 # video = True => for predict a video ; False only one image
-def predict(model, path="../video/video.mkv", video=True):
+def predict(model, path="../video/bbb_sunflower_1080p_30fps_normal.mp4", video=True, frameSkip=0):
     video_in = cv2.VideoCapture(path)
     fps = int(video_in.get(cv2.CAP_PROP_FPS))
     nbFrame = int(video_in.get(cv2.CAP_PROP_FRAME_COUNT))-1
     width = int(video_in.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(video_in.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    nbFrame = 40
+    nbFrame = 60
     width = 160#400#800#1280
     height = 90#225#450#720
 
+    for _ in range(frameSkip):
+        _, _ = video_in.read()
+
     if video:
         fourcc = cv2.VideoWriter_fourcc(*'HFYU')  # ou *'HFYU' *'XVID' ,*MJPG, *MP4V, *'DIVX' cv2.CV_FOURCC_PROMPT
-        video_out = cv2.VideoWriter('../video/output_video.avi', fourcc, fps * 2, (width, height))
+        video_out = cv2.VideoWriter('../video/output_video.avi', fourcc, fps*2, (width, height))
 
         ret, frame1 = video_in.read()
         if ret:
@@ -102,7 +105,7 @@ def load_model(model):
 def main(argv):
     model = AutoEncoder()
     load_model(model)
-    predict(model, video=False)
+    predict(model, video=True, frameSkip=720)
 
 
 if __name__ == '__main__':

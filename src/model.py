@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras import Input, Model
-from tensorflow.keras.layers import Conv2D, Reshape, BatchNormalization, Activation, Dense
+from tensorflow.keras.layers import Conv2D, Reshape, BatchNormalization, Activation
 
 
 def Conv(n_filters, filter_width, strides, activation="relu"):

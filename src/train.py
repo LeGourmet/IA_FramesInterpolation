@@ -24,7 +24,7 @@ FLAGS = flags.FLAGS
 
 
 def train(model):
-    manager = DataManager()
+    manager = DataManager(frameSkip=720)
     nbBatches = manager.nbBatches // FLAGS.batch_size
     lossTab = []
     loss = 0
@@ -47,16 +47,12 @@ def train(model):
     print("Finished training.")
 
     model.save("../trained_model/model.h5")
-    predict(model, video=False)
+    predict(model, video=False,frameSkip=780)
 
     plt.plot(lossTab)
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.show()
-
-
-def custom_loss(y_true,y_pred):
-    return tf.reduce_mean(tf.abs(y_true - y_pred), axis=-1)
 
 
 def load_model(model):
@@ -71,8 +67,8 @@ def main(argv):
     model = AutoEncoder()
     load_model(model)
     model.summary()
-    #model.compile(loss=MSE, optimizer=Adamax(FLAGS.learning_rate))
-    model.compile(loss=MAE, optimizer=Adamax(FLAGS.learning_rate))
+    model.compile(loss=MSE, optimizer=Adamax(FLAGS.learning_rate))
+    #model.compile(loss=MAE, optimizer=Adamax(FLAGS.learning_rate))
     train(model)
 
 

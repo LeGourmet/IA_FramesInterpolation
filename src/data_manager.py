@@ -4,7 +4,7 @@ import cv2
 
 
 class DataManager:
-    def __init__(self, flag=False):
+    def __init__(self, flag=False, frameSkip=0):
         # todo un apprentissage judicieux (evoque en session) vous permettra potentiellement de mieux rentabiliser l'apprentissage.
         self.images = None     # save all the images of a video
         self.batches = None    # indices of images X1, Y, X2 for each batches
@@ -16,10 +16,14 @@ class DataManager:
         imgs = []
         batches = [[], [], []]
 
-        video = cv2.VideoCapture("../video/file_example_MP4_480_1_5MG.mp4")
+        video = cv2.VideoCapture("../video/bbb_sunflower_1080p_30fps_normal.mp4")
         size = int(video.get(cv2.CAP_PROP_FRAME_COUNT)-1)
-        if flag:
-            size = min(size, 10)
+        size = (min(size, 10) if flag else min(size, 1000))
+
+        for _ in range(frameSkip):
+            _, _ = video.read()
+
+        #flow = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
 
         for _ in tqdm(range(size)):
             _, frame = video.read()
