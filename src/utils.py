@@ -1,5 +1,9 @@
 import os
 import tensorflow as tf
+from absl import flags
+from absl.flags import FLAGS
+
+flags.DEFINE_string("model_path", "../trained_model/model.h5", "model relative path")
 
 
 def setup_cuda_device(gpus: str = "-1"):
@@ -9,3 +13,22 @@ def setup_cuda_device(gpus: str = "-1"):
     for device in physical_devices:
         tf.config.experimental.set_memory_growth(device, True)
     print("Num GPUs Available: ", len(physical_devices))
+
+
+def video_frames_skip(video, nb):
+    for _ in range(nb):
+        _, _ = video.read()
+
+
+def read(video):
+    _, frame = video.read()
+    return frame
+
+
+def load_model(model):
+    if os.path.isfile(FLAGS.model_path):
+        print("Loading model from model.h5")
+        model.load_weights(FLAGS.model_path)
+    else:
+        print("model.h5 not found")
+    model.summary()

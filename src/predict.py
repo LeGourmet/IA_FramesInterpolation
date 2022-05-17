@@ -1,7 +1,6 @@
-from utils import setup_cuda_device
+from utils import *
 setup_cuda_device("0")
 
-import os
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -10,6 +9,11 @@ import matplotlib.pyplot as plt
 from src.model import AutoEncoder
 from absl import app
 from tqdm import tqdm
+
+flags.DEFINE_bool("video", True, "predict a video or just an image")
+flags.DEFINE_integer("frames_skip", 720, "nb frame to skip")
+flags.DEFINE_string("video_output_path", '../video/output_video.avi', "path of the output video")
+flags.DEFINE_string("video_predict_path", "../video/bbb_sunflower_1080p_30fps_normal.mp4", "video relative path")
 
 
 def predOneImage(model, width, height, iBefore, iAfter):
@@ -33,22 +37,22 @@ def predOneImage(model, width, height, iBefore, iAfter):
 
 
 # video = True => for predict a video ; False only one image
-def predict(model, path="../video/bbb_sunflower_1080p_30fps_normal.mp4", video=True, frameSkip=0):
-    video_in = cv2.VideoCapture(path)
+def predict(model, video=False, frames_skip=0):
+    video_in = cv2.VideoCapture(FLAGS.video_predict_path)
     fps = int(video_in.get(cv2.CAP_PROP_FPS))
     nbFrame = int(video_in.get(cv2.CAP_PROP_FRAME_COUNT))-1
-    width = int(video_in.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(video_in.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    #width = int(video_in.get(cv2.CAP_PROP_FRAME_WIDTH))
+    #height = int(video_in.get(cv2.CAP_PROP_FRAME_HEIGHT))
     nbFrame = 60
     width = 160#400#800#1280
     height = 90#225#450#720
 
-    for _ in range(frameSkip):
-        _, _ = video_in.read()
+    video_frames_skip(video_in, frames_skip)
 
     if video:
-        fourcc = cv2.VideoWriter_fourcc(*'HFYU')  # ou *'HFYU' *'XVID' ,*MJPG, *MP4V, *'DIVX' cv2.CV_FOURCC_PROMPT
-        video_out = cv2.VideoWriter('../video/output_video.avi', fourcc, fps*2, (width, height))
+
+        fourcc = cv2.VideoWriter_fourcc(*'FFV1')
+        video_out = cv2.VideoWriter(FLAGS.video_output_path, fourcc, fps*2, (width, height))
 
         ret, frame1 = video_in.read()
         if ret:
@@ -93,19 +97,10 @@ def predict(model, path="../video/bbb_sunflower_1080p_30fps_normal.mp4", video=T
             plt.show()
 
 
-def load_model(model):
-    if os.path.isfile("../trained_model/model.h5"):
-        print("Loading model from model.h5")
-        model.load_weights("../trained_model/model.h5")
-    else:
-        print("model.h5 not found")
-    model.summary()
-
-
 def main(argv):
     model = AutoEncoder()
     load_model(model)
-    predict(model, video=True, frameSkip=720)
+    predict(model, video=FLAGS.video, frames_skip=FLAGS.frames_skip)
 
 
 if __name__ == '__main__':
