@@ -17,12 +17,13 @@ flags.DEFINE_integer("epochs", 10, "number of epochs")
 flags.DEFINE_integer("batch_size", 32, "batch size")
 flags.DEFINE_integer("nbPixelsPick", 128, "number of pixel pick by batch")  # use 128 in paper
 flags.DEFINE_integer("maxStep", 10000, "max step for random pick")
+flags.DEFINE_integer("minStep", 1000, "min step for random pick")
 flags.DEFINE_float("learning_rate", 0.001, "learning rate")                 # use 0.001 in paper
 flags.DEFINE_string("video_train_path", "../video/bbb_sunflower_1080p_30fps_normal.mp4", "video relative path")
 
 
 def train(model):
-    manager = DataManager(frames_skip=10430, path=FLAGS.video_train_path, max_img=250)
+    manager = DataManager(frames_skip=10430, path=FLAGS.video_train_path, max_img=500)
     #manager = DataManager(frames_skip=700, path=FLAGS.video_train_path, max_img=100)
     nbBatches = manager.nbBatches // FLAGS.batch_size
     lossTab = []
@@ -40,7 +41,7 @@ def train(model):
             for _ in range(FLAGS.nbPixelsPick):
                 patchs, pixels = manager.get_patchs_and_pixels(X1X2, Y, FLAGS.batch_size, r)
                 loss += model.train_on_batch(patchs, pixels)
-                r += randint(0, FLAGS.maxStep)
+                r += randint(FLAGS.minStep, FLAGS.maxStep)
                 r %= manager.sizeImages
 
         lossTab.append(loss/FLAGS.nbPixelsPick)
