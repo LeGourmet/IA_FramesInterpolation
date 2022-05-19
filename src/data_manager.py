@@ -67,39 +67,3 @@ class DataManager:
         self.batches[1] = self.batches[1][indices]
         self.batches[2] = self.batches[2][indices]
         self.motionBatches = self.motionBatches[indices]
-
-    # Rturn
-    def get_patchs_and_pixels(self, X1X2, Y, batch_size, nbPixelsPick):
-        r = 1
-
-        samples = np.random.rand(nbPixelsPick)
-        samples = np.power(samples, 2)
-        samples = np.abs(samples - 0.001) * 1280*720
-        samples = samples.astype(np.int)
-        patchs = []
-        pixels = []
-
-        for b in range(batch_size):
-            for sample in samples:
-                x = int(self.motionBatches[b][sample] // self.width)
-                y = int(self.motionBatches[b][sample] % self.width)
-                patchs.append(X1X2[b, x:x + 79, y:y + 79, :, :])
-                pixels.append(Y[b, x + 39:x + 40, y + 39:y + 40, :, :])
-
-        return np.array(patchs), np.squeeze(pixels)
-
-
-if __name__ == "__main__":
-    batch_size = 16
-    batch_index = 0
-    dm = DataManager(frames_skip=0, path="./video/bbb_720p_7440-13850.mp4", max_img=20)
-    (X1, X2), Y = dm.get_batch(batch_size, batch_index)
-
-    print("==>> Y.shape: ", Y.shape)
-    print("==>> X2.shape: ", X2.shape)
-    print("==>> X1.shape: ", X1.shape)
-
-    X1X2 = np.concatenate((X1, X2), axis=4)
-    patchs, pixels = dm.get_patchs_and_pixels(X1X2, Y, batch_size, 10)
-    print("==>> pixels.shape: ", pixels.shape)
-    print("==>> patchs.shape: ", patchs.shape)

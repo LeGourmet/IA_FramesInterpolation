@@ -16,12 +16,12 @@ from predict import predict
 setup_cuda_device("0")
 
 
-flags.DEFINE_integer("database_size", 1000, "number of image to load from the video")
+flags.DEFINE_integer("database_size", 500, "number of image to load from the video")
 flags.DEFINE_integer("epochs", 20, "number of epochs")
 flags.DEFINE_integer("batch_size", 32, "batch size")
-flags.DEFINE_integer("nbPixelsPick", 70, "number of pixel pick by batch")  # use 128 in paper
-flags.DEFINE_float("learning_rate", 0.0005, "learning rate")  # use 0.001 in paper
-flags.DEFINE_string("video_train_path", "./video/bbb_720p_7440-13850.mp4", "video relative path")
+flags.DEFINE_integer("nbPixelsPick", 128, "number of pixel pick by batch")  # use 128 in paper
+flags.DEFINE_float("learning_rate", 0.001, "learning rate")  # use 0.001 in paper
+flags.DEFINE_string("video_train_path", "./video/train.mp4", "video relative path")
 
 
 def train(model):
@@ -39,10 +39,20 @@ def train(model):
             X1X2 = np.concatenate((X1, X2), axis=4)
 
             loss = 0
+            samples = np.power(np.random.rand(FLAGS.nbPixelsPick), 2)
+            samples = (samples * manager.sizeImages) % manager.sizeImages
+            samples = samples.astype(int)
 
-            patchs, pixels = manager.get_patchs_and_pixels(X1X2, Y, FLAGS.batch_size, FLAGS.nbPixelsPick)
+            for b in range(FLAGS.batch_size):
+                patchs = []
+                pixels = []
+                for sample in samples:
+                    x = int(manager.motionBatches[b][sample] // manager.width)
+                    y = int(manager.motionBatches[b][sample] % manager.width)
+                    patchs.append(X1X2[b, x:x + 79, y:y + 79, :, :])
+                    pixels.append(Y[b, x + 39:x + 40, y + 39:y + 40, :, :])
 
-            loss += model.train_on_batch(patchs, pixels)
+                loss += model.train_on_batch(np.array(patchs), np.squeeze(pixels))
 
             if (i % 5 == 0):
                 model.save(FLAGS.model_path)
