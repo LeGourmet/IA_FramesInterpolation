@@ -13,13 +13,13 @@ setup_cuda_device("0")
 
 flags.DEFINE_bool("video", True, "predict a video or just an image")
 flags.DEFINE_integer("frames_skip", 0, "nb frame to skip")
-flags.DEFINE_integer("frame_to_load_in_memory", 3000, "nb of frame to load in VRAM")
+flags.DEFINE_integer("patches_to_load_in_memory", 3000, "nb of patches to load in VRAM for prediction")
 flags.DEFINE_string("video_output_path", './video/output_video.avi', "path of the output video")
-flags.DEFINE_string("video_predict_path", "./train.mp4", "video relative path")
+flags.DEFINE_string("video_predict_path", "./video/train.mp4", "video relative path")
 
 
 def predOneImage(model, width, height, iBefore, iAfter):
-    size = FLAGS.frame_to_load_in_memory
+    size = FLAGS.patches_to_load_in_memory
     iBefore = np.reshape(iBefore, (iBefore.shape[0], iBefore.shape[1], iBefore.shape[2], 1))
     iAfter = np.reshape(iAfter, (iAfter.shape[0], iAfter.shape[1], iAfter.shape[2], 1))
     X1X2 = np.pad(np.concatenate((iBefore, iAfter), axis=3), ((39,39),(39,39),(0,0),(0,0)), "constant", constant_values=0)

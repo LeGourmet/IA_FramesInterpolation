@@ -50,7 +50,7 @@ class DataManager:
             hsv_mask[:, :, 2] = cv2.normalize(magnitude, None, 0, 255, cv2.NORM_MINMAX)
 
             gray_motion = cv2.cvtColor(cv2.cvtColor(hsv_mask, cv2.COLOR_HSV2BGR), cv2.COLOR_BGR2GRAY)
-            motion.append(gray_motion.flatten().argsort()[:])
+            motion.append(gray_motion.flatten().argsort()[::-1][:])
 
         self.motionBatches = np.array(motion)
         self.images = np.pad(imgs, ((0, 0), (39, 39), (39, 39), (0, 0)), 'constant', constant_values=0)
@@ -67,3 +67,14 @@ class DataManager:
         self.batches[1] = self.batches[1][indices]
         self.batches[2] = self.batches[2][indices]
         self.motionBatches = self.motionBatches[indices]
+
+    def sample_patches_and_pixels(self, Y, X1X2, samples, b):
+        patchs = []
+        pixels = []
+
+        for sample in samples:
+            x = int(self.motionBatches[b][sample] // self.width)
+            y = int(self.motionBatches[b][sample] % self.width)
+            patchs.append(X1X2[b, x:x + 79, y:y + 79, :, :])
+            pixels.append(Y[b, x + 39:x + 40, y + 39:y + 40, :, :])
+        return np.array(patchs), np.squeeze(pixels)
