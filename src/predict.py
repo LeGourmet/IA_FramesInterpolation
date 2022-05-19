@@ -29,7 +29,7 @@ def predOneImage(model, width, height, iBefore, iAfter):
         for y in range(width):
             batch.append(X1X2[x:x+79, y:y+79, :, :])
             if (len(batch) == size) | (x==(height-1) & y==(width-1)):
-                img.extend(model(np.array(batch), training=False))
+                img.extend(model.predict(np.array(batch), use_multiprocessing=True))
                 bar.update(len(batch))
                 batch = []
 
@@ -50,7 +50,6 @@ def predict(model, video=False, frames_skip=0):
     video_frames_skip(video_in, frames_skip)
 
     if video:
-
         fourcc = cv2.VideoWriter_fourcc(*'FFV1')
         video_out = cv2.VideoWriter(FLAGS.video_output_path, fourcc, fps*2, (width, height))
 

@@ -1,5 +1,6 @@
 import os
 import tensorflow as tf
+from tqdm import tqdm
 from absl import flags
 from absl.flags import FLAGS
 
@@ -16,8 +17,8 @@ def setup_cuda_device(gpus: str = "-1"):
 
 
 def video_frames_skip(video, nb):
-    for _ in range(nb):
-        _, _ = video.read()
+    for _ in tqdm(range(nb), desc="frame skiping"):
+        video.grab()
 
 
 def read(video):

@@ -13,16 +13,17 @@ from data_manager import DataManager
 from tensorflow.keras.optimizers import Adamax
 from tensorflow.keras.losses import MAE
 
-flags.DEFINE_integer("epochs", 20, "number of epochs")
+flags.DEFINE_integer("epochs", 10, "number of epochs")
 flags.DEFINE_integer("batch_size", 32, "batch size")
 flags.DEFINE_integer("nbPixelsPick", 128, "number of pixel pick by batch")  # use 128 in paper
-flags.DEFINE_integer("step_max", 100, "step max of random choosing in image")
+flags.DEFINE_integer("maxStep", 10000, "max step for random pick")
 flags.DEFINE_float("learning_rate", 0.001, "learning rate")                 # use 0.001 in paper
 flags.DEFINE_string("video_train_path", "../video/bbb_sunflower_1080p_30fps_normal.mp4", "video relative path")
 
 
 def train(model):
-    manager = DataManager(frames_skip=720, path=FLAGS.video_train_path)
+    manager = DataManager(frames_skip=10430, path=FLAGS.video_train_path, max_img=250)
+    #manager = DataManager(frames_skip=700, path=FLAGS.video_train_path, max_img=100)
     nbBatches = manager.nbBatches // FLAGS.batch_size
     lossTab = []
     loss = 0
@@ -35,10 +36,12 @@ def train(model):
             X1X2 = np.concatenate((X1,X2), axis=4)
 
             loss = 0
+            r = 0
             for _ in range(FLAGS.nbPixelsPick):
-                x = randint(0,manager.height-1)
-                y = randint(0,manager.width-1)
-                loss += model.train_on_batch(X1X2[:, x:x+79, y:y+79, :, :], np.squeeze(Y[:, x+39:x+40, y+39:y+40, :, :]))
+                patchs, pixels = manager.get_patchs_and_pixels(X1X2, Y, FLAGS.batch_size, r)
+                loss += model.train_on_batch(patchs, pixels)
+                r += randint(0, FLAGS.maxStep)
+                r %= manager.sizeImages
 
         lossTab.append(loss/FLAGS.nbPixelsPick)
         print("Epoch {} - loss: {}".format(epoch, lossTab[-1]))
