@@ -13,7 +13,7 @@ setup_cuda_device("0")
 
 flags.DEFINE_bool("video", True, "predict a video or just an image")
 flags.DEFINE_integer("frames_skip", 0, "nb frame to skip")
-flags.DEFINE_integer("frame_to_load_in_memory", 1500, "nb of frame to load in VRAM")
+flags.DEFINE_integer("frame_to_load_in_memory", 3000, "nb of frame to load in VRAM")
 flags.DEFINE_string("video_output_path", './video/output_video.avi', "path of the output video")
 flags.DEFINE_string("video_predict_path", "./video/bbb_720p_7440-13850.mp4", "video relative path")
 
@@ -47,8 +47,8 @@ def predict(model, video=False, frames_skip=0):
     nbFrame = int(video_in.get(cv2.CAP_PROP_FRAME_COUNT)) - 1
     # width = int(video_in.get(cv2.CAP_PROP_FRAME_WIDTH))
     # height = int(video_in.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    nbFrame = 60
-    res_mult = 1/4
+    nbFrame = 20
+    res_mult = 1/8
     width = int(1280 * res_mult)
     height = int(720 * res_mult)
 
