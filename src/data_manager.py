@@ -17,8 +17,6 @@ class DataManager:
         self.sizeImages = self.width * self.height
 
         imgs = []
-        motion = []
-        batches = [[], [], []]
 
         video = cv2.VideoCapture(path)
         size = int(video.get(cv2.CAP_PROP_FRAME_COUNT) - 1)
@@ -30,13 +28,23 @@ class DataManager:
             imgs.append(cv2.resize(read(video), (self.width, self.height)))
 
         self.images = np.array(imgs)
+        self.batches = self.create_batches(size)
+        motion = self.estimate_opticalflow()
 
+        self.motionBatches = np.array(motion)
+        self.images = np.pad(imgs, ((0, 0), (39, 39), (39, 39), (0, 0)), 'constant', constant_values=0)
+        self.images = np.reshape(self.images, (self.images.shape[0], self.images.shape[1], self.images.shape[2], self.images.shape[3], 1))
+
+    def create_batches(self, batches, size):
+        batches = [[], [], []]
         self.nbBatches = size - 2
         for i in range(self.nbBatches):
             for j in range(3):
                 batches[j].append(i + j)
-        self.batches = np.array(batches)
+        return np.array(batches)
 
+    def estimate_opticalflow(self):
+        motion = []
         const = 180 / np.pi / 2
         for i in tqdm(range(self.nbBatches), desc="motion calculation"):
             img1 = cv2.cvtColor(self.images[self.batches[0][i]], cv2.COLOR_BGR2GRAY)
@@ -51,10 +59,7 @@ class DataManager:
 
             gray_motion = cv2.cvtColor(cv2.cvtColor(hsv_mask, cv2.COLOR_HSV2BGR), cv2.COLOR_BGR2GRAY)
             motion.append(gray_motion.flatten().argsort()[::-1][:])
-
-        self.motionBatches = np.array(motion)
-        self.images = np.pad(imgs, ((0, 0), (39, 39), (39, 39), (0, 0)), 'constant', constant_values=0)
-        self.images = np.reshape(self.images, (self.images.shape[0], self.images.shape[1], self.images.shape[2], self.images.shape[3], 1))
+        return motion
 
     def get_batch(self, batch_size, index=0):
         start = index * batch_size
@@ -78,3 +83,10 @@ class DataManager:
             patchs.append(X1X2[b, x:x + 79, y:y + 79, :, :])
             pixels.append(Y[b, x + 39:x + 40, y + 39:y + 40, :, :])
         return np.array(patchs), np.squeeze(pixels)
+
+    # samping pixels in the batch according to their motion
+    def importance_sampling(self, nbPixelsPick):
+        samples = np.power(np.random.rand(nbPixelsPick), FLAGS.importance_sampling)
+        samples = (samples * self.sizeImages) % self.sizeImages
+        samples = samples.astype(int)
+        return samples

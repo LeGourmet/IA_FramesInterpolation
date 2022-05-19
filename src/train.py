@@ -42,12 +42,8 @@ def train(model):
             (X1, X2), Y = manager.get_batch(FLAGS.batch_size, i)
             X1X2 = np.concatenate((X1, X2), axis=4)
 
-            # samping pixels in the batch according to their motion
-            samples = np.power(np.random.rand(FLAGS.nbPixelsPick), FLAGS.importance_sampling)
-            samples = (samples * manager.sizeImages) % manager.sizeImages
-            samples = samples.astype(int)
+            samples = manager.importance_sampling(FLAGS.nbPixelsPick)
 
-            #
             for b in range(FLAGS.batch_size):
                 patchs, pixels = manager.sample_patches_and_pixels(Y, X1X2, samples, b)
 
