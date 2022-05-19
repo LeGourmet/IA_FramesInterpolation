@@ -1,7 +1,9 @@
-from utils import *
-import numpy as np
-from tqdm import tqdm
 import cv2
+import numpy as np
+
+from tqdm import tqdm
+
+from utils import *
 
 
 class DataManager:
@@ -12,14 +14,14 @@ class DataManager:
         self.nbBatches = 0
         self.width = 1280
         self.height = 720
-        self.sizeImages = self.width*self.height
+        self.sizeImages = self.width * self.height
 
         imgs = []
         motion = []
         batches = [[], [], []]
 
         video = cv2.VideoCapture(path)
-        size = int(video.get(cv2.CAP_PROP_FRAME_COUNT)-1)
+        size = int(video.get(cv2.CAP_PROP_FRAME_COUNT) - 1)
         size = min(size, min_img) if flag else min(size, max_img)
 
         video_frames_skip(video, frames_skip)
@@ -36,8 +38,8 @@ class DataManager:
         self.batches = np.array(batches)
 
         for i in tqdm(range(self.nbBatches), desc="motion calculation"):
-            img1 = cv2.cvtColor(self.images[self.batches[0][i]],cv2.COLOR_BGR2GRAY)
-            img2 = cv2.cvtColor(self.images[self.batches[2][i]],cv2.COLOR_BGR2GRAY)
+            img1 = cv2.cvtColor(self.images[self.batches[0][i]], cv2.COLOR_BGR2GRAY)
+            img2 = cv2.cvtColor(self.images[self.batches[2][i]], cv2.COLOR_BGR2GRAY)
             flow = cv2.calcOpticalFlowFarneback(img1, img2, None, 0.5, 3, 15, 3, 5, 1.2, 0)
             magnitude, _ = cv2.cartToPolar(flow[:, :, 0], flow[:, :, 1])
             motion.append(magnitude.flatten().argsort()[:])

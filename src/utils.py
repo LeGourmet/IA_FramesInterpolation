@@ -1,10 +1,11 @@
 import os
 import tensorflow as tf
+
 from tqdm import tqdm
 from absl import flags
 from absl.flags import FLAGS
 
-flags.DEFINE_string("model_path", "../trained_model/model.h5", "model relative path")
+flags.DEFINE_string("model_path", "./trained_model/model.h5", "model relative path")
 
 
 def setup_cuda_device(gpus: str = "-1"):
