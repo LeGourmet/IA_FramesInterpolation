@@ -19,19 +19,19 @@ flags.DEFINE_string("video_train_path", "./video/train.mp4", "video relative pat
 
 
 # size of train data (influence epoch time and train quality)
-flags.DEFINE_integer("database_size", 1000, "number of image to load from the video")
-flags.DEFINE_integer("nbPixelsPick", 512, "number of pixel pick by batch")
+flags.DEFINE_integer("database_size", 1500, "number of image to load from the video")
+flags.DEFINE_integer("nbPixelsPick", 128, "number of pixel pick by batch")
 
 # train parameters
-flags.DEFINE_integer("epochs", 2000, "number of epochs")
-flags.DEFINE_integer("batch_size", 64, "batch size")
+flags.DEFINE_integer("epochs", 200, "number of epochs")
+flags.DEFINE_integer("batch_size", 32, "batch size")
 flags.DEFINE_float("learning_rate", 0.001, "learning rate")
 
 # impoortance of pixel motion in trainingD
-flags.DEFINE_float("sampling_factor", 3.0, "sample moving pixels more often")
+flags.DEFINE_float("sampling_factor", 2.0, "sample moving pixels more often")
 
 def train(model):
-    manager = DataManager(frames_skip=100, path=FLAGS.video_train_path, max_img=FLAGS.database_size)
+    manager = DataManager(frames_skip=1000, path=FLAGS.video_train_path, max_img=FLAGS.database_size)
     nbBatchs = manager.nbGroups // FLAGS.batch_size
     lossTab = []
     loss = 0

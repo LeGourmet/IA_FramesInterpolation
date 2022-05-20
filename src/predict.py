@@ -14,8 +14,8 @@ setup_cuda_device("0")
 flags.DEFINE_bool("video", True, "predict a video or just an image")
 
 # Video options
-flags.DEFINE_integer("frames_skip", 300, "nb frame to skip")
-flags.DEFINE_integer("nb_frames_to_predict", 20, "nb frame to skip")
+flags.DEFINE_integer("frames_skip", 3055, "nb frame to skip")
+flags.DEFINE_integer("nb_frames_to_predict", 60, "nb frame to skip")
 flags.DEFINE_float("res_mult", 1/4, "resolution multiplier")
 
 # paths
