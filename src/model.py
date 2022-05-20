@@ -28,8 +28,9 @@ def AutoEncoder():
     X = BatchNormalization()(X)
     X = Conv(2048, 4, 1)(X)
     X = Conv(3362, 1, 1)(X)
-    X = Activation("softmax")(X)
+    X = Activation("softmax")(X)  # softamx because we are dealing with a convolution kernel
 
+    # convolution of the kernel inside the model for derivation reasons
     kernel = Reshape((41, 41, 1, 2))(X)
     output = tf.math.reduce_sum(tf.math.multiply(tf.repeat(kernel, repeats=3, axis=3), input[:, 19:60, 19:60, :, :]), [1, 2, 4])
 
